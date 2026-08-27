@@ -20,6 +20,9 @@ hey i want to build an adaptive learning website that includes from the opening 
 - Every subject now has a basic summary and instant fallback lesson content.
 - Quizzes now contain five capacity-check questions with simple explanations per answer.
 - Quiz attempts are saved to MongoDB and feed the review queue and concept-level progress insights.
+- Each subject lesson now includes nine memorable points with a summary and example.
+- Quiz sessions now show five questions, per-question explanations, score percentage, performance guidance, and a concept breakdown.
+- Lesson, quiz, and score views include browser fullscreen controls with an exit action.
 
 ## Backlog
 - P0: Add Google OAuth Client ID and Secret, then replace the demo endpoint with the verified OAuth callback.
