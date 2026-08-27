@@ -1,0 +1,40 @@
+{
+  "app_name": "SynapseLearn - Adaptive Learning Intelligence",
+  "app_type": "hybrid_fullstack",
+  "archetype": "ORGANIC & EARTHY mixed with PERFORMANCE PRO (Warm sand, deep obsidian, indigo, and emerald accents)",
+  "typography": {
+    "heading_font": "Plus Jakarta Sans, sans-serif",
+    "body_font": "Inter, sans-serif",
+    "mono_font": "JetBrains Mono, monospace"
+  },
+  "colors": {
+    "primary": "#4F46E5",
+    "primary_hover": "#4338CA",
+    "background_dark": "#0B0F17",
+    "surface_dark": "#161E2E",
+    "border_dark": "#2A374A",
+    "text_main": "#F8FAFC",
+    "text_muted": "#94A3B8",
+    "accent_emerald": "#10B981",
+    "accent_amber": "#F59E0B"
+  },
+  "key_modules": [
+    "Landing & Quick Login / Register Screen (Email/Password + Google Sign-In)",
+    "Onboarding Grade & Age Selector with AI Diagnostic Profile",
+    "Subject Library (Mathematics, Physics, Chemistry, Biology, Computer Science, Literature, History)",
+    "Interactive Study Lesson View (Adaptive Notes powered by GPT 5.6 Luna & Terra)",
+    "Dynamic Quiz Generation with Real-Time Adaptive Difficulty",
+    "Answer Feedback & Explanations (Personalized for memory retention & understanding)",
+    "Study History & Knowledge Graph Progress Dashboard"
+  ],
+  "image_urls": {
+    "student_workspace": "https://images.unsplash.com/photo-1779258998575-9ada827d45ad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBlZHVjYXRpb24lMjBzdHVkZW50JTIwbGVhcm5pbmclMjB3b3Jrc3BhY2V8ZW58MHx8fHwxNzg3ODQxMzgwfDA&ixlib=rb-4.1.0&q=85",
+    "ai_neural_graph": "https://images.unsplash.com/photo-1664854953181-b12e6dda8b7c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHxBSSUyMG5ldXJjalMjIG5ldHdvcmslMjBzdHVkeSUyMGtub3dsZWRnZSUyMGdyYXBofGVufDB8fHx8MTc4Nzg0MTM4MHww&ixlib=rb-4.1.0&q=85"
+  },
+  "instructions_to_main_agent": [
+    "Implement a fully functional adaptive learning platform with React, Tailwind CSS, and Shadcn UI components.",
+    "Ensure all interactive items have data-testid attributes.",
+    "Provide a smooth flow from Landing -> Login/Register -> Grade/Age Onboarding -> Subject Library -> Lesson Study -> Adaptive Quiz -> Answer Explanations -> Progress Dashboard.",
+    "Include simulated GPT 5.6 Luna (thoughtful explanations) and GPT 5.6 Terra (strong reasoning) AI tutors with toggleable insights."
+  ]
+}
