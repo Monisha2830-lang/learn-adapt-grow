@@ -68,6 +68,14 @@ class AnswerInput(BaseModel):
     correct_answer: str
     grade: str
 
+class HistoryInput(BaseModel):
+    email: str
+    kind: str
+    subject: str
+    topic: str
+    correct: Optional[bool] = None
+    answer: Optional[str] = None
+
 SECRET = os.environ["JWT_SECRET"]
 
 def token_for(user):
@@ -85,6 +93,10 @@ SUBJECTS = [
 LESSONS = {
     "math": {"title":"Linear equations","subject":"Mathematics","eyebrow":"Next up · 18 min","summary":"A linear equation is a balanced statement where an unknown value can be found by making the same move to both sides.","steps":["Think of the equals sign as a perfectly balanced scale.","Undo operations in reverse order: subtract before dividing.","Always check by putting your answer back into the original equation."],"example":"3x + 4 = 19  →  3x = 15  →  x = 5"},
     "science": {"title":"Cells & systems","subject":"Science","eyebrow":"Continue · 24 min","summary":"Cells are the smallest living units. Their specialized parts work together like a tiny, organized city.","steps":["The cell membrane decides what enters and leaves.","The nucleus stores instructions for the cell.","Mitochondria release energy from food for the cell to use."],"example":"Cell membrane → controls traffic | Nucleus → stores instructions"},
+    "english": {"title":"Persuasive writing","subject":"English","eyebrow":"Next up · 15 min","summary":"Persuasive writing uses a clear opinion, strong reasons, and evidence to help a reader understand your point of view.","steps":["State your opinion clearly in the opening.","Support each reason with a specific example.","Finish by showing why the idea matters."],"example":"Claim + reasons + evidence = convincing writing"},
+    "history": {"title":"Industrial revolution","subject":"History","eyebrow":"Continue · 20 min","summary":"The Industrial Revolution changed how people made goods, worked, and lived by moving production into factories.","steps":["Machines made production faster.","Factories brought workers together in cities.","The changes created both opportunity and difficult working conditions."],"example":"New machines → factories → growing cities"},
+    "computer-science": {"title":"Algorithms","subject":"Computer Science","eyebrow":"Start here · 27 min","summary":"An algorithm is a clear set of steps that solves a problem, like a recipe that a computer can follow.","steps":["Name the problem before choosing steps.","Keep each step clear and in order.","Test the process with a small example."],"example":"Input → steps → output"},
+    "biology": {"title":"Life foundations","subject":"Biology","eyebrow":"Start here · 22 min","summary":"Living things are organized systems that use energy, respond to their surroundings, and grow or reproduce.","steps":["Cells are the basic units of life.","Living systems need energy to keep working.","Structure and function are connected."],"example":"Structure helps a living thing do its job"},
 }
 
 # Add your routes to the router instead of directly to app
@@ -120,8 +132,29 @@ async def lesson(subject_id: str): return LESSONS.get(subject_id, {"title":"Foun
 @api_router.post("/quiz")
 async def quiz(input: QuizInput):
     if input.subject.lower() == "mathematics":
-        return {"question":"If 3x + 4 = 19, what is x?","options":["3","5","7","15"],"correct":"5","topic":input.topic or "Linear equations","difficulty":"Just right","hint":"Undo the +4 first, then divide by 3."}
-    return {"question":"Which choice best describes the key idea from this lesson?","options":["It works only in special cases","It is a system of connected parts","It is impossible to test","It is unrelated to evidence"],"correct":"It is a system of connected parts","topic":input.topic or "Core concepts","difficulty":"Just right","hint":"Think about how the parts work together."}
+        questions = [{"question":"If 3x + 4 = 19, what is x?","options":["3","5","7","15"],"correct":"5","explanation":"Subtract 4 to get 15, then divide by 3. So x = 5."},{"question":"What is 2/4 in its simplest form?","options":["1/2","1/4","2/8","4/2"],"correct":"1/2","explanation":"Divide the top and bottom by 2: 2/4 becomes 1/2."},{"question":"What is the next number: 2, 4, 8, 16, __?","options":["18","24","32","34"],"correct":"32","explanation":"Each number doubles, so 16 × 2 = 32."},{"question":"Which is equal to 0.75?","options":["1/4","3/4","7/5","75/10"],"correct":"3/4","explanation":"0.75 means 75 hundredths, which simplifies to 3/4."},{"question":"A triangle has angles 60° and 70°. What is the third angle?","options":["40°","50°","60°","70°"],"correct":"50°","explanation":"Triangle angles total 180°. 180 − 60 − 70 = 50°."}]
+    else:
+        questions = [{"question":"Which choice best describes the key idea from this lesson?","options":["It works only in special cases","It is a system of connected parts","It is impossible to test","It is unrelated to evidence"],"correct":"It is a system of connected parts","explanation":"The lesson connects smaller ideas into one working system."},{"question":"Which study move helps memory most?","options":["Read once and stop","Explain it in your own words","Skip examples","Guess quickly"],"correct":"Explain it in your own words","explanation":"Explaining aloud helps your brain organize and retrieve the idea."},{"question":"What should you do when an answer is difficult?","options":["Give up","Look for a clue and try a smaller step","Delete the question","Choose randomly"],"correct":"Look for a clue and try a smaller step","explanation":"Small steps reduce the load and reveal what you already know."},{"question":"Why do we use examples?","options":["To decorate notes","To connect an idea to a real case","To make lessons longer","To avoid thinking"],"correct":"To connect an idea to a real case","explanation":"Examples turn an abstract idea into something easier to picture."},{"question":"What makes a strong study note?","options":["One giant paragraph","A clear idea and a short example","Only difficult words","No headings"],"correct":"A clear idea and a short example","explanation":"A simple idea plus an example is easier to revisit later."}]
+    return {"questions":questions,"question":questions[0]["question"],"options":questions[0]["options"],"correct":questions[0]["correct"],"topic":input.topic or "Core concepts","difficulty":"Just right","hint":"Use the lesson’s core idea, then eliminate choices that do not fit."}
+
+@api_router.post("/history")
+async def save_history(input: HistoryInput):
+    doc = input.model_dump(); doc["created_at"] = datetime.now(timezone.utc).isoformat(); await db.study_history.insert_one(doc)
+    return {"saved": True, "id": str(uuid.uuid4())}
+
+@api_router.get("/review-queue/{email}")
+async def review_queue(email: str):
+    attempts = await db.study_history.find({"email": email, "kind": "quiz", "correct": False}, {"_id": 0}).to_list(20)
+    topics = list({a.get("topic", "Core concepts") for a in attempts})
+    return {"items":[{"topic":t,"reason":"A gentle revisit can make this one stick","subject":next((s["name"] for s in SUBJECTS if s["name"].lower() in t.lower()),"Your subject")} for t in topics[:5]] or [{"topic":"Linear equations","reason":"A short revisit builds confidence","subject":"Mathematics"},{"topic":"Cells & systems","reason":"Review while it is still fresh","subject":"Science"}]}
+
+@api_router.get("/progress-insights/{email}")
+async def progress_insights(email: str):
+    attempts = await db.study_history.find({"email": email, "kind": "quiz"}, {"_id": 0}).to_list(100)
+    by_topic = {}
+    for item in attempts:
+        topic = item.get("topic", "Core concepts"); stats = by_topic.setdefault(topic, {"correct":0,"total":0}); stats["total"] += 1; stats["correct"] += int(bool(item.get("correct")))
+    return {"insights":[{"topic":t,"score":round(v["correct"] / v["total"] * 100),"message":"Strong foundation — try a harder example next." if v["correct"] else "Try one more small example, then explain it aloud."} for t,v in by_topic.items()]}
 
 @api_router.post("/explain")
 async def explain(input: AnswerInput):

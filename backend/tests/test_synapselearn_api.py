@@ -38,3 +38,22 @@ def test_google_demo_login():
     r = requests.post(f"{BASE_URL}/api/auth/google", timeout=20)
     assert r.status_code == 200
     assert r.json()["user"]["email"] == "alex@demo.synapselearn.com"
+
+
+def test_quiz_has_five_questions_for_math_and_non_math():
+    for subject in ("Mathematics", "Science"):
+        r = requests.post(f"{BASE_URL}/api/quiz", json={"subject": subject, "topic": "Core concepts", "grade": "Grade 8", "history": []}, timeout=20)
+        assert r.status_code == 200
+        assert len(r.json()["questions"]) == 5
+        assert all(q["explanation"] for q in r.json()["questions"])
+
+
+def test_history_review_queue_and_progress_insights():
+    email = "TEST_history_taylor@example.com"
+    payload = {"email": email, "kind": "quiz", "subject": "Mathematics", "topic": "Linear equations", "correct": False, "answer": "3"}
+    saved = requests.post(f"{BASE_URL}/api/history", json=payload, timeout=20)
+    assert saved.status_code == 200 and saved.json()["saved"] is True
+    queue = requests.get(f"{BASE_URL}/api/review-queue/{email}", timeout=20)
+    assert queue.status_code == 200 and queue.json()["items"]
+    insights = requests.get(f"{BASE_URL}/api/progress-insights/{email}", timeout=20)
+    assert insights.status_code == 200 and insights.json()["insights"][0]["score"] == 0
